@@ -274,14 +274,25 @@ ui <- page_navbar(
 
           checkboxGroupInput("mod_ivs", "Independent Variables",
             choices = c(
-              "Lagged protest days"       = "lag_protest_days",
-              "Lagged repression days"    = "lag_repression_days",
-              "Lagged protesters"         = "lag_protesters",
-              "Lagged agents"             = "lag_agents",
-              "Year trend"                = "year_trend",
-              "GDP per capita (log)"      = "log_gdp_pc",
-              "Unemployment rate (%)"     = "unemp",
-              "Population (log)"          = "log_pop"
+              # Francisco lags
+              "Lagged protest days"         = "lag_protest_days",
+              "Lagged repression days"      = "lag_repression_days",
+              "Lagged protesters"           = "lag_protesters",
+              "Lagged agents"               = "lag_agents",
+              "Year trend"                  = "year_trend",
+              # Economic (WDI)
+              "GDP per capita (log)"        = "log_gdp_pc",
+              "Unemployment rate (%)"       = "unemp",
+              "Population (log)"            = "log_pop",
+              "Trade openness (% GDP)"      = "trade",
+              "Inflation (CPI, %)"          = "inflation",
+              "Urban population (%)"        = "urban",
+              # Political & structural
+              "Eastern bloc country"        = "eastern_bloc",
+              "Communist regime"            = "communist_regime",
+              "Post-transition"             = "post_transition",
+              "EU/EEC member"               = "eu_member",
+              "NATO member"                 = "nato_member"
             ),
             selected = c("lag_protest_days", "lag_repression_days")
           ),

@@ -36,9 +36,9 @@ YEAR_MAX      <- 1995L
 
 ## ── Theme helpers ─────────────────────────────────────────────────────────────
 
-PROTEST_COL    <- "#c0392b"  # warm red
-REPRESSION_COL <- "#2c3e50"  # dark slate
-BOTH_COL       <- "#8e44ad"  # purple
+PROTEST_COL    <- "#E8000D"  # KU Crimson
+REPRESSION_COL <- "#002855"  # KU Dark Navy
+BOTH_COL       <- "#7B5EA7"  # muted purple (contrast with blue + crimson)
 
 base_theme <- function() {
   theme_tufte(base_size = 13) +
@@ -59,12 +59,12 @@ fmt_big <- function(x) format(round(x), big.mark = ",", scientific = FALSE)
 ui <- page_navbar(
   title = "Francisco Protest & Coercion Data",
   theme = bs_theme(
-    bg         = "#fafafa",
-    fg         = "#1a1a1a",
-    primary    = "#0066cc",
-    secondary  = "#2A7347",
-    success    = "#2A7347",
-    danger     = "#c0392b",
+    bg         = "#f9fafb",
+    fg         = "#0d1a2e",
+    primary    = "#0051BA",
+    secondary  = "#002855",
+    success    = "#0051BA",
+    danger     = "#E8000D",
     base_font  = font_google("Plus Jakarta Sans"),
     code_font  = font_google("JetBrains Mono")
   ),
@@ -334,6 +334,16 @@ ui <- page_navbar(
       ),
       column(9,
         div(class = "panel-box",
+          h4("Variable Distributions"),
+          p(class = "table-note",
+            "Distributions and summaries for the selected outcome and predictors.",
+            "Updates automatically with country/year filters."),
+          plotOutput("mod_desc_hist"),
+          hr(),
+          h4("Summary Statistics"),
+          DTOutput("mod_desc_table")
+        ),
+        div(class = "panel-box",
           h4("Coefficient Plot"),
           plotlyOutput("mod_coef_plot", height = "360px"),
           hr(),
@@ -359,6 +369,21 @@ ui <- page_navbar(
 )
 
 ## ── Server ───────────────────────────────────────────────────────────────────
+
+## ── Variable label lookup (human-readable names for all model vars) ──────────
+var_labels <- c(
+  protest_days     = "Protest days",      repression_days  = "Repression days",
+  protest_rate     = "Protest rate",       repression_rate  = "Repression rate",
+  total_protesters = "Total protesters",   total_agents     = "Total agents",
+  lag_protest_days = "Lag: protest days",  lag_repression_days = "Lag: repression days",
+  lag_protesters   = "Lag: protesters",    lag_agents       = "Lag: agents",
+  year_trend       = "Year trend",         log_gdp_pc       = "GDP pc (log)",
+  unemp            = "Unemployment (%)",   log_pop          = "Population (log)",
+  trade            = "Trade (% GDP)",      inflation        = "Inflation (CPI %)",
+  urban            = "Urban pop. (%)",     eastern_bloc     = "Eastern bloc",
+  communist_regime = "Communist regime",   post_transition  = "Post-transition",
+  eu_member        = "EU/EEC member",      nato_member      = "NATO member"
+)
 
 server <- function(input, output, session) {
 
@@ -403,7 +428,7 @@ server <- function(input, output, session) {
       slice_head(n = 15) |>
       mutate(action = reorder(action, n)) |>
       ggplot(aes(n, action)) +
-      geom_col(fill = "#2980b9", width = 0.7) +
+      geom_col(fill = "#0051BA", width = 0.7) +
       scale_x_continuous(labels = comma) +
       labs(x = "Events", y = NULL) +
       base_theme()
@@ -415,7 +440,7 @@ server <- function(input, output, session) {
       slice_head(n = 15) |>
       mutate(issue = reorder(issue, n)) |>
       ggplot(aes(n, issue)) +
-      geom_col(fill = "#27ae60", width = 0.7) +
+      geom_col(fill = "#002855", width = 0.7) +
       scale_x_continuous(labels = comma) +
       labs(x = "Events", y = NULL) +
       base_theme()
@@ -586,7 +611,87 @@ server <- function(input, output, session) {
       )
   }, server = TRUE)
 
-  ## ── Models tab ──────────────────────────────────────────────────────────────
+  ## ── Models tab ───────────────────────────────────────────────────────────────────
+
+  # Reactive: filtered cy_model for current country/year selections (no button needed)
+  model_data <- reactive({
+    d <- cy_model |>
+      filter(year >= input$mod_years[1], year <= input$mod_years[2])
+    if (!("all" %in% input$mod_country) && length(input$mod_country) > 0) {
+      d <- d |> filter(country %in% input$mod_country)
+    }
+    d
+  })
+
+  ## ── Descriptive statistics (auto-updating) ──────────────────────────────
+
+  output$mod_desc_hist <- renderPlot({
+    all_vars <- unique(c(input$mod_dv, input$mod_ivs))
+    available <- intersect(all_vars, names(cy_model))
+    if (length(available) == 0) return(NULL)
+
+    d <- model_data() |>
+      select(all_of(available)) |>
+      pivot_longer(everything(), names_to = "variable", values_to = "value") |>
+      filter(!is.na(value)) |>
+      mutate(
+        variable = ifelse(
+          !is.na(var_labels[variable]), var_labels[variable], variable
+        )
+      )
+
+    n_vars <- length(unique(d$variable))
+    n_cols <- min(4, n_vars)
+
+    ggplot(d, aes(x = value)) +
+      geom_histogram(fill = "#0051BA", color = "white", bins = 25, alpha = 0.82) +
+      facet_wrap(~ variable, scales = "free", ncol = n_cols) +
+      labs(x = NULL, y = "Count") +
+      base_theme() +
+      theme(
+        strip.text       = element_text(size = 9, face = "bold", color = "#0d1a2e"),
+        strip.background = element_blank(),
+        panel.spacing    = unit(0.9, "lines"),
+        axis.text        = element_text(size = 8)
+      )
+  }, height = function() {
+    n_vars <- length(unique(c(input$mod_dv, input$mod_ivs)))
+    max(180, ceiling(n_vars / 4) * 210)
+  })
+
+  output$mod_desc_table <- renderDT({
+    all_vars  <- unique(c(input$mod_dv, input$mod_ivs))
+    available <- intersect(all_vars, names(cy_model))
+    if (length(available) == 0) return(NULL)
+
+    d <- model_data() |> select(all_of(available))
+
+    stats <- d |>
+      pivot_longer(everything(), names_to = "variable", values_to = "value") |>
+      group_by(variable) |>
+      summarise(
+        N      = sum(!is.na(value)),
+        Mean   = round(mean(value,   na.rm = TRUE), 3),
+        SD     = round(sd(value,     na.rm = TRUE), 3),
+        Min    = round(min(value,    na.rm = TRUE), 3),
+        Median = round(median(value, na.rm = TRUE), 3),
+        Max    = round(max(value,    na.rm = TRUE), 3),
+        .groups = "drop"
+      ) |>
+      mutate(
+        Variable = ifelse(
+          !is.na(var_labels[variable]), var_labels[variable], variable
+        )
+      ) |>
+      select(Variable, N, Mean, SD, Min, Median, Max)
+
+    datatable(
+      stats,
+      rownames = FALSE,
+      options  = list(dom = "t", pageLength = 25, ordering = FALSE),
+      class    = "compact stripe"
+    )
+  }, server = FALSE)
 
   model_result <- eventReactive(input$run_model, {
     dv      <- input$mod_dv

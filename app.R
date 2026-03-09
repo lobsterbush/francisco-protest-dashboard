@@ -16,11 +16,10 @@ library(fixest)
 library(broom)
 library(scales)
 library(stringr)
-library(here)
 
-## ── Load pre-processed data ──────────────────────────────────────────────────
+## ── Load pre-processed data ────────────────────────────────────────────
 
-dd <- readRDS(here("data", "dashboard_data.rds"))
+dd <- readRDS("data/dashboard_data.rds")
 
 events         <- dd$events
 cy             <- dd$cy
@@ -60,11 +59,19 @@ fmt_big <- function(x) format(round(x), big.mark = ",", scientific = FALSE)
 ui <- page_navbar(
   title = "Francisco Protest & Coercion Data",
   theme = bs_theme(
-    bootswatch = "flatly",
-    base_font  = font_google("Source Sans Pro"),
-    code_font  = font_google("Source Code Pro")
+    bg         = "#fafafa",
+    fg         = "#1a1a1a",
+    primary    = "#0066cc",
+    secondary  = "#2A7347",
+    success    = "#2A7347",
+    danger     = "#c0392b",
+    base_font  = font_google("Plus Jakarta Sans"),
+    code_font  = font_google("JetBrains Mono")
   ),
-  header = tags$head(tags$link(rel = "stylesheet", href = "custom.css")),
+  header = tags$head(
+    tags$link(rel = "stylesheet", href = "custom.css"),
+    tags$meta(name = "viewport", content = "width=device-width, initial-scale=1")
+  ),
 
   ## ── TAB 1: Overview ──────────────────────────────────────────────────────────
   nav_panel(
@@ -72,15 +79,22 @@ ui <- page_navbar(
     icon = icon("chart-line"),
 
     div(class = "hero-section",
+      div(class = "hero-eyebrow", "A tribute to Ron Francisco's life work"),
       h2("European Protest & Coercion Data"),
       p(class = "hero-subtitle",
-        "Compiled by Prof. Ron Francisco (University of Kansas) · 29 countries · 1980–1995 · daily resolution"),
+        "The most comprehensive daily-resolution record of political contention and state repression
+         in modern Europe. Compiled by Prof. Ron Francisco (University of Kansas), this dataset covers",
+        strong("29 countries"), "across", strong("16 years (1980\u20131995)"),
+        "and", strong(paste0(fmt_big(summ$total_events), " coded events")),
+        "\u2014 including strikes, occupations, demonstrations, bombings, arrests, and much more."
+      ),
       div(class = "hero-attribution",
         "Data source: ",
         tags$a("ronfran.ku.edu/data", href = "https://ronfran.ku.edu/data/index.html",
                target = "_blank"),
-        ". This dashboard honors Francisco's pioneering contribution to the systematic study of ",
-        "political contention and state repression in modern Europe."
+        " · Dashboard by Charles Crabtree (Monash University / Korea University).",
+        " Cite as: Francisco, R. (2000). ", em("European Protest and Coercion Data"), ".",
+        " University of Kansas."
       )
     ),
 
@@ -264,7 +278,10 @@ ui <- page_navbar(
               "Lagged repression days"    = "lag_repression_days",
               "Lagged protesters"         = "lag_protesters",
               "Lagged agents"             = "lag_agents",
-              "Year trend"                = "year_trend"
+              "Year trend"                = "year_trend",
+              "GDP per capita (log)"      = "log_gdp_pc",
+              "Unemployment rate (%)"     = "unemp",
+              "Population (log)"          = "log_pop"
             ),
             selected = c("lag_protest_days", "lag_repression_days")
           ),

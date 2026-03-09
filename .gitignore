@@ -17,3 +17,9 @@ Thumbs.db
 
 # rsconnect deployment (personal tokens)
 rsconnect/
+
+# shinylive export artifacts (too large for git)
+docs/shinylive/
+docs/app.json
+docs/shinylive-sw.js
+docs/edit/

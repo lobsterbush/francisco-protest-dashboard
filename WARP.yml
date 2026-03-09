@@ -1,0 +1,159 @@
+# European Protest and Coercion Data - Complete Cleaning Workflow
+# Data Source: Prof. Ron Francisco (https://ronfran.ku.edu/data/index.html)
+# Cleaned: September-October 2025
+
+project:
+  name: "European Protest and Coercion Data Cleaning"
+  description: "Comprehensive cleaning and standardization of protest/coercion data across 28 European countries (1980-1995)"
+  source: "https://ronfran.ku.edu/data/index.html"
+  
+data_overview:
+  original_files: 70
+  countries: 28
+  time_period: "1980-1995"
+  total_observations: 225603
+  
+major_issues_resolved:
+  column_standardization:
+    problem: "37 different header patterns across files"
+    examples: 
+      - "Event Date vs Date vs Protest date"
+      - "# Protesters vs # protesters vs Protesters"
+      - "Arrests vs Prot. Arrested vs protesters arrested"
+    solution: "Intelligent pattern-matching standardization function"
+    
+  date_parsing:
+    original_success_rate: "88.48%"
+    enhanced_success_rate: "92.49%" 
+    improvement: "+4.01 percentage points"
+    methods:
+      - "Multiple text format parsing (%d-%b-%y, %m/%d/%y, etc.)"
+      - "Excel serial date conversion (16,826 dates recovered)"
+      - "Two-digit year correction to 1980s-1990s context"
+    excel_recovery:
+      - "UK93-95.csv: 9,068 Excel dates → Complete UK 1993-1995 data"
+      - "Romania 80-95.csv: 6,374 Excel dates → Complete Romania dataset" 
+      - "NorthernIreland90-92.csv: 1,384 Excel dates → Complete N.Ireland 1990-1992"
+    
+  country_names:
+    standardized:
+      - "FRG → West Germany"
+      - "GDR → East Germany"
+      - "UK → United Kingdom"
+      - "thirdreich → Germany"
+      - "francemay68 → France"
+      
+  numeric_variables:
+    cleaned: "7 numeric variables with outlier detection"
+    validation: "Logical consistency checks (arrests ≤ protesters, etc.)"
+
+scripts_created:
+  basic_cleaning: "clean_protest_data.R"
+  enhanced_cleaning: "enhanced_clean_protest_data.R"
+  analysis: "analyze_cleaned_data.R"
+  
+datasets_created:
+  location: "~/Documents/GitHub/protest-coercion/"
+  
+  cleaned_data/:
+    - "protest_coercion_final_cleaned.csv (188,222 rows)"
+    - "protest_coercion_events_only.csv (78,178 rows)"
+    - "protest_coercion_daily_timeseries.csv (134,174 rows)"
+    - "protest_coercion_country_year_summary.csv (372 rows)"
+    - "protest_coercion_coverage_summary.csv (26 rows)"
+    - "README.txt"
+    - "data_documentation.json"
+    
+  enhanced_cleaned_data/:
+    - "protest_coercion_enhanced_parsed.csv (205,175 rows) ⭐ RECOMMENDED"
+    - "protest_coercion_enhanced_events.csv (88,656 rows)"
+    - "protest_coercion_enhanced_all_data.csv (221,828 rows)"
+    - "excel_date_recovery_summary.csv"
+    - "parsing_method_breakdown.csv"
+
+final_results:
+  parsing_success: "92.49% (up from 88.48%)"
+  additional_records: "+16,953 records recovered"
+  excel_dates_converted: 16826
+  files_with_100_percent_success: "62 out of 69 files"
+  
+  country_improvements:
+    - "United Kingdom: Complete 1980-1995 coverage (9,068 additional days)"
+    - "Romania: Complete 1980-1995 coverage (6,374 additional days)"
+    - "Northern Ireland: Complete 1990-1992 coverage (1,384 additional days)"
+    
+data_quality:
+  validation_checks:
+    - "Date range validation (1980-1995)"
+    - "Country name consistency"  
+    - "Logical numeric constraints"
+    - "Event date validity"
+  
+  remaining_challenges:
+    - "francemay68.csv: 0% (historical format outside scope)"
+    - "thirdreich.csv: 0% (historical data, pre-1980)"
+    - "Hungary80-95.csv: 0.07% (corrupted format)"
+    - "Czech93-95.csv: 1.83% (non-standard format)"
+    - "Czechoslovakia90-92.csv: 2.24% (non-standard format)"
+    - "Portugal80-87.csv: 2.61% (header issues)"
+
+analysis_recommendations:
+  primary_dataset: "enhanced_cleaned_data/protest_coercion_enhanced_parsed.csv"
+  benefits:
+    - "Highest data completeness (92.49% success rate)"
+    - "Complete UK coverage including 1993-1995"
+    - "Complete Romania coverage"
+    - "Transparent method tracking"
+    - "Analysis-ready format"
+    
+  use_cases:
+    general_analysis: "protest_coercion_enhanced_parsed.csv"
+    time_series: "protest_coercion_daily_timeseries.csv"
+    events_only: "protest_coercion_enhanced_events.csv"
+    country_comparison: "protest_coercion_country_year_summary.csv"
+
+technical_notes:
+  excel_date_conversion:
+    algorithm: "Excel serial dates = days since 1899-12-30"
+    validation: "All converted dates verified within 1980-1995 range"
+    example: "33970 → January 1, 1993 ✓"
+    
+  parsing_methods_used:
+    - "text_%d-%b-%y: 180,918 dates (87.6%)"
+    - "excel_serial: 16,826 dates (8.2%)" 
+    - "text_%m/%d/%y: 7,427 dates (3.6%)"
+    - "text_%d-%b-%Y: 4 dates (0.002%)"
+    
+  column_mapping:
+    core_variables: 28
+    standardized_names: "date, n_protesters_numeric, state_actors_numeric, etc."
+    metadata_added: "source_file, extracted_country, parsing_method, validation_flags"
+
+visualization:
+  created: "protest_coercion_timeline.png"
+  style: "Professional visualization following Tufte's principles"
+  shows: "Protest and coercion activity trends 1980-1995"
+
+key_assumptions_validated:
+  date_range: "1980-1995 constraint successfully applied"
+  excel_conversion: "Excel serial date hypothesis confirmed with 16,826 successful conversions"
+  conservative_approach: "92.49% success with high confidence vs aggressive parsing"
+  country_standardization: "All major European countries properly identified"
+
+next_steps:
+  - "Use protest_coercion_enhanced_parsed.csv for statistical analysis"
+  - "Consider Table 3 models as mentioned in user preferences"
+  - "Apply Tufte's principles for any visualizations"
+  - "Leverage complete UK and Romania datasets for comparative studies"
+  
+project_completion:
+  status: "✅ COMPLETE"
+  date: "October 2025"
+  success_metrics:
+    - "✅ 37 different formats standardized"
+    - "✅ Date parsing improved from 88.48% to 92.49%"
+    - "✅ 16,826 Excel dates successfully recovered"
+    - "✅ Complete UK 1993-1995 data recovered"
+    - "✅ Complete Romania dataset recovered"
+    - "✅ Analysis-ready datasets created"
+    - "✅ Comprehensive documentation provided"

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Francisco European Protest & Coercion Dashboard</title>
+  <meta name="description" content="Interactive dashboard for Ron Francisco's European Protest and Coercion Data — 29 countries, 1980–1995, daily resolution.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent:      #0066cc;
+      --green:       #2A7347;
+      --green-light: #4A9B67;
+      --protest:     #c0392b;
+      --repression:  #2c3e50;
+      --text:        #1a1a1a;
+      --muted:       #5c5c5c;
+      --font-sans:   'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-mono:   'JetBrains Mono', monospace;
+      --radius:      10px;
+      --transition:  0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--text);
+      background: #fafafa;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated mesh gradient */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 8%  15%, rgba(192,57,43,0.09)  0%, transparent 60%),
+        radial-gradient(ellipse 70% 50% at 92% 10%, rgba(0,102,204,0.14)  0%, transparent 55%),
+        radial-gradient(ellipse 60% 70% at 55% 88%, rgba(42,115,71,0.12)  0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 28% 58%, rgba(0,102,204,0.10)  0%, transparent 50%),
+        radial-gradient(ellipse 65% 55% at 78% 45%, rgba(74,155,103,0.11) 0%, transparent 55%),
+        linear-gradient(135deg, #f9f8f7 0%, #f0eeeb 25%, #edf1f7 50%, #eef3ee 75%, #f9f8f7 100%);
+      background-size: 220% 220%;
+      animation: mesh 22s ease infinite;
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(circle 700px at 12% 78%, rgba(0,102,204,0.08)   0%, transparent 65%),
+        radial-gradient(circle 600px at 82% 22%, rgba(42,115,71,0.10)   0%, transparent 65%),
+        radial-gradient(circle 450px at 50% 50%, rgba(192,57,43,0.04)   0%, transparent 55%);
+      background-size: 160% 160%;
+      animation: mesh2 30s ease infinite;
+      pointer-events: none; z-index: 0;
+    }
+    @keyframes mesh  { 0%,100%{background-position:0% 0%}  25%{background-position:45% 22%} 50%{background-position:100% 55%} 75%{background-position:18% 82%} }
+    @keyframes mesh2 { 0%,100%{background-position:100% 0%} 33%{background-position:0% 60%} 66%{background-position:65% 100%} }
+
+    body > * { position: relative; z-index: 1; }
+
+    /* Nav */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 54px;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border-bottom: 1px solid rgba(255,255,255,0.45);
+      box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+      z-index: 100;
+      display: flex; align-items: center;
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 1.5rem;
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-weight: 700; font-size: 1rem; color: var(--accent);
+      text-decoration: none; letter-spacing: -0.01em;
+    }
+    .nav-links { display: flex; gap: 0.4rem; align-items: center; }
+    .nav-link {
+      font-size: 0.875rem; color: #4a4a4a; text-decoration: none;
+      padding: 0.4rem 0.7rem; border-radius: 6px;
+      transition: all var(--transition);
+    }
+    .nav-link:hover { background: var(--green); color: #fff; }
+    .nav-cta {
+      background: var(--accent); color: #fff !important;
+      font-weight: 600; padding: 0.4rem 0.9rem;
+      border-radius: 6px; text-decoration: none;
+      transition: all var(--transition);
+      box-shadow: 0 3px 10px rgba(0,102,204,0.25);
+    }
+    .nav-cta:hover { background: var(--green); transform: translateY(-1px); box-shadow: 0 5px 16px rgba(42,115,71,0.3); }
+
+    /* Layout */
+    main { max-width: 1100px; margin: 0 auto; padding: 100px 1.5rem 5rem; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg,
+        rgba(192,57,43,0.06) 0%, rgba(0,102,204,0.06) 50%, rgba(42,115,71,0.06) 100%);
+      border: 1px solid rgba(255,255,255,0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+      padding: 3rem 3rem 2.5rem;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.7s ease both;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    .eyebrow {
+      font-size: 0.75rem; font-weight: 600; color: var(--green);
+      text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 0.9rem;
+    }
+    h1 {
+      font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 700;
+      line-height: 1.15; margin-bottom: 1.1rem;
+    }
+    .lead {
+      font-size: 1.05rem; color: #4a4a4a; line-height: 1.8;
+      max-width: 680px; margin-bottom: 1.6rem;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      background: linear-gradient(135deg, var(--green) 0%, #1a5c36 100%);
+      color: #fff; font-weight: 600; font-size: 0.95rem;
+      padding: 0.8rem 1.6rem; border-radius: 8px; text-decoration: none;
+      box-shadow: 0 4px 14px rgba(42,115,71,0.28);
+      transition: all var(--transition);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 7px 22px rgba(42,115,71,0.38); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      background: rgba(255,255,255,0.65); color: var(--accent);
+      border: 1.5px solid rgba(0,102,204,0.3);
+      font-weight: 600; font-size: 0.95rem;
+      padding: 0.8rem 1.6rem; border-radius: 8px; text-decoration: none;
+      backdrop-filter: blur(8px);
+      transition: all var(--transition);
+    }
+    .btn-secondary:hover { background: rgba(0,102,204,0.07); border-color: var(--accent); transform: translateY(-2px); }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 1rem; margin-bottom: 2.5rem;
+    }
+    .stat {
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: var(--radius);
+      padding: 1.2rem 1rem; text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: all var(--transition);
+      animation: fadeUp 0.5s ease both;
+    }
+    .stat:nth-child(1){animation-delay:.05s} .stat:nth-child(2){animation-delay:.1s}
+    .stat:nth-child(3){animation-delay:.15s} .stat:nth-child(4){animation-delay:.2s}
+    .stat:nth-child(5){animation-delay:.25s}
+    .stat:hover { transform: translateY(-3px); background: rgba(255,255,255,0.72); box-shadow: 0 8px 28px rgba(0,0,0,0.09); }
+    .stat-val {
+      font-family: var(--font-mono); font-size: 1.85rem; font-weight: 700;
+      color: var(--accent); line-height: 1.15;
+    }
+    .stat-val.protest    { color: var(--protest); }
+    .stat-val.repression { color: var(--repression); }
+    .stat-lbl {
+      font-family: var(--font-mono); font-size: 0.63rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--muted); margin-top: 0.3rem;
+    }
+
+    /* Feature cards */
+    .features {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem; margin-bottom: 2.5rem;
+    }
+    .feature-card {
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: var(--radius);
+      padding: 1.6rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: all var(--transition);
+    }
+    .feature-card:hover {
+      background: rgba(255,255,255,0.72);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+      border-color: rgba(42,115,71,0.22);
+      transform: translateY(-2px);
+    }
+    .feature-icon {
+      font-size: 1.5rem; margin-bottom: 0.75rem;
+      display: block;
+    }
+    .feature-card h3 {
+      font-size: 1rem; font-weight: 700; color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .feature-card p {
+      font-size: 0.88rem; color: var(--muted); line-height: 1.65;
+    }
+    .feature-tag {
+      display: inline-block; margin-top: 0.75rem;
+      font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
+      padding: 0.2rem 0.55rem; border-radius: 4px;
+      background: rgba(0,102,204,0.08); color: var(--accent);
+    }
+
+    /* Data section */
+    .section-head {
+      font-size: 0.72rem; font-weight: 600; color: var(--green);
+      text-transform: uppercase; letter-spacing: 0.14em;
+      margin-bottom: 0.5rem;
+    }
+    h2 {
+      font-size: 1.45rem; font-weight: 700; margin-bottom: 1.1rem;
+      position: relative; padding-bottom: 0.65rem;
+    }
+    h2::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 45px; height: 2.5px; background: var(--accent);
+    }
+
+    .countries-grid {
+      display: flex; flex-wrap: wrap; gap: 0.45rem;
+      margin-bottom: 2rem;
+    }
+    .country-chip {
+      font-family: var(--font-mono); font-size: 0.72rem;
+      background: rgba(255,255,255,0.60); border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 5px; padding: 0.25rem 0.55rem; color: #444;
+    }
+
+    /* Attribution */
+    .attribution {
+      background: rgba(255,255,255,0.50);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.60);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.8rem;
+      font-size: 0.88rem; color: var(--muted); line-height: 1.7;
+    }
+    .attribution a { color: var(--accent); text-decoration: none; }
+    .attribution a:hover { color: var(--green); text-decoration: underline; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(0,0,0,0.07);
+      padding: 2rem 0 1rem;
+      text-align: center;
+      font-family: var(--font-mono); font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 768px) {
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .features   { grid-template-columns: 1fr; }
+      .hero { padding: 2rem 1.5rem; }
+      main { padding: 80px 1.25rem 4rem; }
+    }
+    @media (max-width: 480px) {
+      .stats-bar { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">Francisco Data</a>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#data"     class="nav-link">Data</a>
+      <a href="https://github.com/lobsterbush/francisco-protest-dashboard" target="_blank" class="nav-link">GitHub</a>
+      <a href="https://ndpn46-charles-crabtree.shinyapps.io/francisco-protest-coercion/" target="_blank" class="nav-cta">Open Dashboard →</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="eyebrow">A tribute to Ron Francisco's life work</div>
+    <h1>European Protest &amp;<br>Coercion Dashboard</h1>
+    <p class="lead">
+      The most detailed daily-resolution record of political contention and state repression in modern Europe.
+      Prof. Ron Francisco (University of Kansas) spent decades assembling this remarkable dataset — 
+      29 countries, 16 years, and 88,000 coded events from strikes and demonstrations to arrests and bombings.
+    </p>
+    <div class="hero-actions">
+      <a href="https://ndpn46-charles-crabtree.shinyapps.io/francisco-protest-coercion/" target="_blank" class="btn-primary">
+        Open Interactive Dashboard →
+      </a>
+      <a href="https://github.com/lobsterbush/francisco-protest-dashboard" target="_blank" class="btn-secondary">
+        View on GitHub
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-val">88,656</div>
+      <div class="stat-lbl">Coded Events</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">29</div>
+      <div class="stat-lbl">Countries</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">16</div>
+      <div class="stat-lbl">Years (1980–1995)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val protest">54,708</div>
+      <div class="stat-lbl">Protest Events</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val repression">10,853</div>
+      <div class="stat-lbl">Repression Events</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="section-head" id="features">What's inside</div>
+  <h2>Four ways to explore the data</h2>
+  <div class="features">
+    <div class="feature-card">
+      <span class="feature-icon">📈</span>
+      <h3>Overview</h3>
+      <p>Summary statistics, a full protest &amp; repression timeline across all 29 countries, top countries by protest activity, and breakdowns of the most common action types and issue categories.</p>
+      <span class="feature-tag">All 88K events</span>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🗺️</span>
+      <h3>Trends</h3>
+      <p>Filter by country (one or many) and year range. See annual time series for protest days, repression days, protest rate, and more. Explore a scatter of protest vs. repression at the country-year level.</p>
+      <span class="feature-tag">Interactive filters</span>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🔍</span>
+      <h3>Events</h3>
+      <p>Search and browse all 88,000+ individual coded events by keyword, country, year, action type, or issue. Export any filtered set to CSV or Excel. Includes protest size, state actor counts, and event descriptions.</p>
+      <span class="feature-tag">Searchable · Exportable</span>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">📊</span>
+      <h3>Models</h3>
+      <p>Run your own statistical models in-browser. Choose from OLS, logit, or Poisson estimators with country and year fixed effects. Independent variables include lagged protest/repression, GDP per capita, unemployment, and population from the World Bank.</p>
+      <span class="feature-tag">OLS · Logit · Poisson · FE</span>
+    </div>
+  </div>
+
+  <!-- Data -->
+  <div class="section-head" id="data">Coverage</div>
+  <h2>29 European Countries, 1980–1995</h2>
+  <div class="countries-grid">
+    <span class="country-chip">Albania</span>
+    <span class="country-chip">Austria</span>
+    <span class="country-chip">Belgium</span>
+    <span class="country-chip">Bulgaria</span>
+    <span class="country-chip">Cyprus</span>
+    <span class="country-chip">Czech Republic</span>
+    <span class="country-chip">Czechoslovakia</span>
+    <span class="country-chip">Denmark</span>
+    <span class="country-chip">Finland</span>
+    <span class="country-chip">France</span>
+    <span class="country-chip">West Germany (FRG)</span>
+    <span class="country-chip">East Germany (GDR)</span>
+    <span class="country-chip">Greece</span>
+    <span class="country-chip">Hungary</span>
+    <span class="country-chip">Iceland</span>
+    <span class="country-chip">Ireland</span>
+    <span class="country-chip">Italy</span>
+    <span class="country-chip">Luxembourg</span>
+    <span class="country-chip">Netherlands</span>
+    <span class="country-chip">Northern Ireland</span>
+    <span class="country-chip">Norway</span>
+    <span class="country-chip">Poland</span>
+    <span class="country-chip">Portugal</span>
+    <span class="country-chip">Romania</span>
+    <span class="country-chip">Slovakia</span>
+    <span class="country-chip">Spain</span>
+    <span class="country-chip">Sweden</span>
+    <span class="country-chip">Switzerland</span>
+    <span class="country-chip">United Kingdom</span>
+  </div>
+
+  <!-- Attribution -->
+  <div class="attribution">
+    <strong>Data:</strong> Francisco, R. (2000). <em>European Protest and Coercion Data</em>. University of Kansas.
+    Original data available at <a href="https://ronfran.ku.edu/data/index.html" target="_blank">ronfran.ku.edu/data</a>.
+    &nbsp;·&nbsp;
+    <strong>Dashboard:</strong> Charles Crabtree, Senior Lecturer, School of Social Sciences, Monash University and
+    K-Club Professor, University College, Korea University.
+    &nbsp;·&nbsp;
+    <strong>Code:</strong> <a href="https://github.com/lobsterbush/francisco-protest-dashboard" target="_blank">github.com/lobsterbush/francisco-protest-dashboard</a>
+  </div>
+
+</main>
+
+<footer>
+  Built by Charles Crabtree &nbsp;·&nbsp; Data: Ron Francisco (University of Kansas) &nbsp;·&nbsp;
+  <a href="https://charlescrabtree.org" target="_blank" style="color:var(--accent)">charlescrabtree.org</a>
+</footer>
+
+</body>
+</html>

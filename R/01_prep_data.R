@@ -12,6 +12,7 @@ library(lubridate)
 library(stringr)
 library(readr)
 library(purrr)
+library(WDI)
 
 set.seed(42)
 
@@ -154,7 +155,86 @@ issues <- events |>
   slice_head(n = 30) |>
   mutate(issue = str_to_title(issue))
 
-## ── 11. Country-year panel with lags (for models tab) ────────────────────────
+## ── 11. Country-year panel with lags + WDI covariates (for models tab) ─────
+
+### WDI country → ISO-2 mapping (only countries present in Francisco data)
+country_iso2 <- c(
+  "Albania"              = "AL",
+  "Austria"              = "AT",
+  "Belgium"              = "BE",
+  "Bulgaria"             = "BG",
+  "Cyprus"               = "CY",
+  "Czech Republic"       = "CZ",
+  "Czechoslovakia"       = NA_character_,  # not in WDI
+  "Denmark"              = "DK",
+  "Finland"              = "FI",
+  "France"               = "FR",
+  "West Germany (FRG)"   = "DE",  # WDI uses DEU for all Germany
+  "East Germany (GDR)"   = NA_character_,  # not in WDI
+  "Greece"               = "GR",
+  "Hungary"              = "HU",
+  "Iceland"              = "IS",
+  "Ireland"              = "IE",
+  "Italy"                = "IT",
+  "Luxembourg"           = "LU",
+  "Netherlands"          = "NL",
+  "Northern Ireland"     = "GB",  # proxy: UK
+  "Norway"               = "NO",
+  "Poland"               = "PL",
+  "Portugal"             = "PT",
+  "Romania"              = "RO",
+  "Slovakia"             = "SK",
+  "Spain"                = "ES",
+  "Sweden"               = "SE",
+  "Switzerland"          = "CH",
+  "United Kingdom"       = "GB"
+)
+
+cat("Downloading WDI data...\n")
+wdi_raw <- tryCatch(
+  WDI(
+    country   = na.omit(unique(country_iso2)),
+    indicator = c(
+      gdp_pc = "NY.GDP.PCAP.KD",    # GDP per capita, constant 2015 USD
+      unemp  = "SL.UEM.TOTL.ZS",   # Unemployment, % total labour force
+      pop    = "SP.POP.TOTL"        # Population, total
+    ),
+    start = 1979, end = 1996, extra = FALSE
+  ),
+  error = function(e) {
+    warning("WDI download failed: ", e$message, ". Continuing without WDI covariates.")
+    NULL
+  }
+)
+
+if (!is.null(wdi_raw)) {
+  wdi <- wdi_raw |>
+    select(iso2c, year, gdp_pc, unemp, pop) |>
+    rename(wdi_iso2 = iso2c)
+
+  # Build reverse map: iso2 → all Francisco country names using that code
+  iso2_to_countries <- split(
+    names(country_iso2),
+    country_iso2
+  )
+
+  # Expand: for each Francisco country, attach matching WDI rows
+  cy_wdi_key <- tibble(
+    country  = names(country_iso2),
+    wdi_iso2 = unname(country_iso2)
+  ) |> filter(!is.na(wdi_iso2))
+
+  wdi_merged <- cy_wdi_key |>
+    left_join(wdi, by = "wdi_iso2", relationship = "many-to-many") |>
+    select(country, year, gdp_pc, unemp, pop)
+
+  cat("WDI rows merged:", nrow(wdi_merged), "\n")
+} else {
+  wdi_merged <- tibble(
+    country = character(), year = integer(),
+    gdp_pc = numeric(), unemp = numeric(), pop = numeric()
+  )
+}
 
 cy_model <- cy |>
   arrange(country, year) |>
@@ -166,7 +246,12 @@ cy_model <- cy |>
     lag_agents          = lag(total_agents),
     year_trend          = year - 1980
   ) |>
-  ungroup()
+  ungroup() |>
+  left_join(wdi_merged, by = c("country", "year")) |>
+  mutate(
+    log_gdp_pc = log(gdp_pc + 1),
+    log_pop    = log(pop    + 1)
+  )
 
 ## ── 12. Summary stats (for Overview cards) ───────────────────────────────────
 

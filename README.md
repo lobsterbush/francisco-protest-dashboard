@@ -47,11 +47,13 @@ install.packages(c(
 
 ## Deployment
 
-The app is deployed publicly at: *(shinyapps.io link — add after deployment)*
+**Live dashboard:** https://ndpn46-charles-crabtree.shinyapps.io/francisco-protest-coercion/
 
-To deploy yourself:
+**Landing page (GitHub Pages):** https://lobsterbush.github.io/francisco-protest-dashboard/
+
+To re-deploy:
 ```r
-rsconnect::deployApp()
+rsconnect::deployApp(account = "ndpn46-charles-crabtree", server = "shinyapps.io")
 ```
 
 ## License

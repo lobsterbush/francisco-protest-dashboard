@@ -1,0 +1,19 @@
+# Raw source data (too large for git — regenerate via R/01_prep_data.R)
+enhanced_cleaned_data/
+cleaned_data/
+
+# R session artifacts
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# Legacy analysis files no longer needed
+analysis/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# rsconnect deployment (personal tokens)
+rsconnect/

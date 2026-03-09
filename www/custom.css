@@ -1,0 +1,174 @@
+/* Francisco Protest & Coercion Dashboard — custom styles */
+
+/* ── Typography ─────────────────────────────────────────────────────────────── */
+body { font-size: 14px; color: #1a1a1a; }
+
+/* ── Hero section ───────────────────────────────────────────────────────────── */
+.hero-section {
+  background: #f8f6f2;
+  border-left: 4px solid #c0392b;
+  padding: 1.4rem 1.8rem;
+  margin: 1rem 0 1.5rem 0;
+  border-radius: 0 6px 6px 0;
+}
+.hero-section h2 {
+  font-size: 1.55rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  color: #1a1a1a;
+}
+.hero-subtitle {
+  font-size: 0.92rem;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+.hero-attribution {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.6;
+}
+.hero-attribution a { color: #c0392b; }
+.hero-attribution a:hover { text-decoration: underline; }
+
+/* ── Summary cards ──────────────────────────────────────────────────────────── */
+.cards-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  flex: 1 1 140px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.1rem 1rem;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.stat-value {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #2c3e50;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.stat-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-top: 0.3rem;
+}
+.protest-card    .stat-value { color: #c0392b; }
+.repression-card .stat-value { color: #2c3e50; }
+
+/* ── Panel boxes ────────────────────────────────────────────────────────────── */
+.panel-box {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1.1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.panel-box h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────────────────── */
+.sidebar-box {
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem 1rem;
+  position: sticky;
+  top: 12px;
+}
+.sidebar-box h5 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #555;
+  margin-bottom: 0.9rem;
+}
+
+/* ── Run Model button ───────────────────────────────────────────────────────── */
+.btn-run {
+  width: 100%;
+  background-color: #c0392b !important;
+  border-color: #a93226 !important;
+  color: #fff !important;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  letter-spacing: 0.04em;
+}
+.btn-run:hover {
+  background-color: #a93226 !important;
+  border-color: #922b21 !important;
+}
+
+/* ── Events tab ─────────────────────────────────────────────────────────────── */
+.table-note {
+  font-size: 0.82rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+}
+.filter-note {
+  font-size: 0.85rem;
+  color: #555;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  padding: 0.45rem 0.7rem;
+  text-align: center;
+}
+
+/* ── DataTables adjustments ─────────────────────────────────────────────────── */
+.dataTables_wrapper .dataTables_filter input {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+}
+.dataTables_wrapper .dataTables_length select {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+table.dataTable thead th {
+  background: #f5f5f5;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #444;
+}
+
+/* ── Navbar ─────────────────────────────────────────────────────────────────── */
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ── Verbatim output ─────────────────────────────────────────────────────────── */
+pre {
+  background: #f9f9f9;
+  border: 1px solid #e8e8e8;
+  border-radius: 5px;
+  font-size: 0.82rem;
+  padding: 0.75rem;
+}
+
+/* ── HR ─────────────────────────────────────────────────────────────────────── */
+hr { border-top: 1px solid #eee; margin: 1.1rem 0; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cards-row { flex-direction: column; }
+  .stat-card  { flex: 1 1 100%; }
+}

@@ -36,9 +36,9 @@ YEAR_MAX      <- 1995L
 
 ## ── Theme helpers ─────────────────────────────────────────────────────────────
 
-PROTEST_COL    <- "#E8000D"  # KU Crimson
-REPRESSION_COL <- "#002855"  # KU Dark Navy
-BOTH_COL       <- "#7B5EA7"  # muted purple (contrast with blue + crimson)
+PROTEST_COL    <- "#E8000D"  # Protest red (semantic — keep)
+REPRESSION_COL <- "#374151"  # Cool dark slate
+BOTH_COL       <- "#6b7e94"  # Cool blue-slate
 
 base_theme <- function() {
   theme_tufte(base_size = 13) +
@@ -59,11 +59,11 @@ fmt_big <- function(x) format(round(x), big.mark = ",", scientific = FALSE)
 ui <- page_navbar(
   title = "Francisco Protest & Coercion Data",
   theme = bs_theme(
-    bg         = "#f9fafb",
-    fg         = "#0d1a2e",
-    primary    = "#0051BA",
-    secondary  = "#002855",
-    success    = "#0051BA",
+    bg         = "#f9f9fb",
+    fg         = "#111118",
+    primary    = "#0e7490",
+    secondary  = "#374151",
+    success    = "#0e7490",
     danger     = "#E8000D",
     base_font  = font_google("Plus Jakarta Sans"),
     code_font  = font_google("JetBrains Mono")
@@ -427,8 +427,8 @@ server <- function(input, output, session) {
     p <- actions |>
       slice_head(n = 15) |>
       mutate(action = reorder(action, n)) |>
-      ggplot(aes(n, action)) +
-      geom_col(fill = "#0051BA", width = 0.7) +
+    ggplot(aes(n, action)) +
+      geom_col(fill = "#0e7490", width = 0.7) +
       scale_x_continuous(labels = comma) +
       labs(x = "Events", y = NULL) +
       base_theme()
@@ -439,8 +439,8 @@ server <- function(input, output, session) {
     p <- issues |>
       slice_head(n = 15) |>
       mutate(issue = reorder(issue, n)) |>
-      ggplot(aes(n, issue)) +
-      geom_col(fill = "#002855", width = 0.7) +
+    ggplot(aes(n, issue)) +
+      geom_col(fill = "#374151", width = 0.7) +
       scale_x_continuous(labels = comma) +
       labs(x = "Events", y = NULL) +
       base_theme()
@@ -644,12 +644,12 @@ server <- function(input, output, session) {
     n_cols <- min(4, n_vars)
 
     ggplot(d, aes(x = value)) +
-      geom_histogram(fill = "#0051BA", color = "white", bins = 25, alpha = 0.82) +
+      geom_histogram(fill = "#0e7490", color = "white", bins = 25, alpha = 0.82) +
       facet_wrap(~ variable, scales = "free", ncol = n_cols) +
       labs(x = NULL, y = "Count") +
       base_theme() +
       theme(
-        strip.text       = element_text(size = 9, face = "bold", color = "#0d1a2e"),
+      strip.text       = element_text(size = 9, face = "bold", color = "#111118"),
         strip.background = element_blank(),
         panel.spacing    = unit(0.9, "lines"),
         axis.text        = element_text(size = 8)
